@@ -14,6 +14,7 @@ __status__ = "development"
 from urllib.request import Request, urlopen
 import bs4 # Beatiful soup
 import re # Regexp
+import random # Shuffling
 
 ##########################################################################################
 
@@ -58,10 +59,32 @@ def parse_data(data):
 
 	return pokedex
 
+# Function to choose the 6 pokemon team
+def choose_random_team(pokedex):
+	team = []
+	random.shuffle(pokedex) # Randomize the selected team
+
+	for pokemon in pokedex:
+		if len(pokemon[2]) == 2 and is_repeated_type(team, pokemon[2]) == False:
+			team.append(pokemon)
+			if(len(team) == 6): break
+	
+	return team
+
+# Check if the pokemon type is yet in the team
+def is_repeated_type(team, types):
+	for pokemon in team:
+		if (types[0] in pokemon[2]) and (types[1] in pokemon[2]): return True
+	return False
+
+
 # Main function
 def main():
 	data = get_data()
-	pokedex = parse_data(data)
+	pokedex = parse_data(data)	
+	team = choose_random_team(pokedex)
+	generate_html(team)
+	print(team)
 
 
 # Main call
