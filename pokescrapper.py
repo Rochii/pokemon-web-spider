@@ -78,13 +78,30 @@ def is_repeated_type(team, types):
 	return False
 
 
+# Function to generate the html template with the poke team
+def generate_html(team):
+	file = open("template.html", "r");	
+	write_file = open("poketeam.html", "w+")
+
+	template = file.read()
+
+	for i in range(0, 6):
+		template = template.replace("%%image" + str(i+1) + "%%", team[i][3])
+		template = template.replace("%%pokeid" + str(i+1) + "%%", team[i][0])
+		template = template.replace("%%pokemon" + str(i+1) + "%%", team[i][1])
+		template = template.replace("%%types" + str(i+1) + "%%", " · ".join(team[i][2]))
+
+	write_file.write(template)
+
+	file.close()
+	write_file.close()
+
 # Main function
 def main():
 	data = get_data()
 	pokedex = parse_data(data)	
 	team = choose_random_team(pokedex)
 	generate_html(team)
-	print(team)
 
 
 # Main call
