@@ -18,6 +18,28 @@ import random # Shuffling
 
 ##########################################################################################
 
+# Structure: <font color="red">This is some text!</font>
+html_colors = {
+	'Grass' : '7AC74C', 
+	'Poison' : 'A33EA1', 
+	'Fire' : 'EE8130', 
+	'Flying' : 'A98FF3', 
+	'Water' : '6390F0', 
+	'Bug' : 'A6B91A', 
+	'Normal' : 'A8A77A', 
+	'Electric' : 'F7D02C', 
+	'Ground' : 'E2BF65', 
+	'Fairy' : 'D685AD', 
+	'Fighting' : 'C22E28', 
+	'Psychic' : 'F95587', 
+	'Rock' : 'B6A136', 
+	'Steel' : 'B7B7CE', 
+	'Ice' : '96D9D6', 
+	'Ghost' : '735797', 
+	'Dragon' : '6F35FC', 
+	'Dark' : '705746'
+}
+
 # Function to get data from "https://pokemondb.net/pokedex/national"
 def get_data(url = "https://pokemondb.net/pokedex/national"):
 
@@ -37,7 +59,7 @@ def parse_data(data):
 
 	count = 1
 	for generation in generations:
-		print("Generation {0}".format(count))		
+		#print("Generation {0}".format(count))		
 		pokemons = generation.find_all("div", "infocard");
 
 		for pokemon in pokemons:
@@ -51,7 +73,7 @@ def parse_data(data):
 
 			types = []
 			for poke_type in poke_types:
-				types.append(poke_type.text)	
+				types.append(poke_type.text)
 
 			pokedex.append([poke_id[0].text, poke_name[0].text, types, poke_img])
 
@@ -77,7 +99,6 @@ def is_repeated_type(team, types):
 		if (types[0] in pokemon[2]) and (types[1] in pokemon[2]): return True
 	return False
 
-
 # Function to generate the html template with the poke team
 def generate_html(team):
 	file = open("template.html", "r");	
@@ -88,8 +109,9 @@ def generate_html(team):
 	for i in range(0, 6):
 		template = template.replace("%%image" + str(i+1) + "%%", team[i][3])
 		template = template.replace("%%pokeid" + str(i+1) + "%%", team[i][0])
-		template = template.replace("%%pokemon" + str(i+1) + "%%", team[i][1])
-		template = template.replace("%%types" + str(i+1) + "%%", " · ".join(team[i][2]))
+		template = template.replace("%%pokemon" + str(i+1) + "%%", team[i][1])		
+		types = "<font color=\""+ html_colors[team[i][2][0]] + "\">" + team[i][2][0] + "</font>  ·  " + "<font color=\""+ html_colors[team[i][2][1]] + "\">" + team[i][2][1] + "</font>"		  
+		template = template.replace("%%types" + str(i+1) + "%%", types)
 
 	write_file.write(template)
 
@@ -102,7 +124,6 @@ def main():
 	pokedex = parse_data(data)	
 	team = choose_random_team(pokedex)
 	generate_html(team)
-
 
 # Main call
 if __name__ == "__main__":
