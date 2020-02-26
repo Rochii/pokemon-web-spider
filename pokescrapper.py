@@ -6,7 +6,7 @@ __credits__ = ["Roger Truchero Visa"]
 __license__ = "GPL"
 __version__ = ""
 __maintainer__ = "Roger Truchero Visa"
-__email__ = "rtruchero@lleida.net"
+__email__ = "truchero.roger@gmail.com"
 __status__ = "development"
 
 ##########################################################################################
@@ -15,36 +15,40 @@ import requests					# Make requests
 from bs4 import BeautifulSoup	# Beautiful Soup
 import re 						# Regexp
 import random 					# Shuffling
+import os, webbrowser			# Open html in browser
 
 ##########################################################################################
 
 class PokeTeam():	
-	# Structure: <font color="red">This is some text!</font>
-	html_colors = {
-		'Grass' 	: '7AC74C', 
-		'Poison' 	: 'A33EA1', 
-		'Fire' 		: 'EE8130', 
-		'Flying' 	: 'A98FF3', 
-		'Water' 	: '6390F0', 
-		'Bug' 		: 'A6B91A', 
-		'Normal' 	: 'A8A77A', 
-		'Electric' 	: 'F7D02C', 
-		'Ground' 	: 'E2BF65', 
-		'Fairy' 	: 'D685AD', 
-		'Fighting' 	: 'C22E28', 
-		'Psychic' 	: 'F95587', 
-		'Rock' 		: 'B6A136', 
-		'Steel' 	: 'B7B7CE', 
-		'Ice' 		: '96D9D6', 
-		'Ghost' 	: '735797', 
-		'Dragon' 	: '6F35FC', 
-		'Dark' 		: '705746'
-	}
+	# Class constructor
+	def __init__(self):
+		# Structure: <font color="red">This is some text!</font>
+		self.html_colors = {
+			'Grass' 	: '7AC74C', 
+			'Poison' 	: 'A33EA1', 
+			'Fire' 		: 'EE8130', 
+			'Flying' 	: 'A98FF3', 
+			'Water' 	: '6390F0', 
+			'Bug' 		: 'A6B91A', 
+			'Normal' 	: 'A8A77A', 
+			'Electric' 	: 'F7D02C', 
+			'Ground' 	: 'E2BF65', 
+			'Fairy' 	: 'D685AD', 
+			'Fighting' 	: 'C22E28', 
+			'Psychic' 	: 'F95587', 
+			'Rock' 		: 'B6A136', 
+			'Steel' 	: 'B7B7CE', 
+			'Ice' 		: '96D9D6', 
+			'Ghost' 	: '735797', 
+			'Dragon' 	: '6F35FC', 
+			'Dark' 		: '705746'
+		}
+
+		self.w_file = "poketeam.html"
 
 	# Function to get data from "https://pokemondb.net/pokedex/national"	
 	def get_data(self, url = "https://pokemondb.net/pokedex/national"):
-		req = requests.get(url, headers = {'User-Agent': 'Mozilla/5.0'})
-		return req.text
+		return requests.get(url, headers = {'User-Agent': 'Mozilla/5.0'}).text		
 
 	# Function to parse data	
 	def parse_data(self, data):
@@ -62,10 +66,8 @@ class PokeTeam():
 				poke_types = pokemon.select('a[class*="itype "]')
 				poke_img = re.search('(.+?)data-src=\"(.+?)\"(.+?)', str(pokemon))
 				if poke_img: 
-					poke_img = poke_img.group(2)
-				types = []
-				for poke_type in poke_types:
-					types.append(poke_type.text)
+					poke_img = poke_img.group(2)				
+				types = [poke_type.text for poke_type in poke_types]				
 				pokedex.append([poke_id[0].text, poke_name[0].text, types, poke_img])
 			count += 1
 
@@ -77,23 +79,24 @@ class PokeTeam():
 		random.shuffle(pokedex) # Randomize the selected team
 
 		for pokemon in pokedex:
-			if len(pokemon[2]) == 2 and self.is_repeated_type(team, pokemon[2]) == False:
+			if len(pokemon[2]) == 2 and not self.is_repeated_type(team, pokemon[2]):
 				team.append(pokemon)
-				if(len(team) == 6): 
-					break	
+				if(len(team) == 6):
+					break
 		return team
 
 	# Check if the pokemon type is yet in the team	
 	def is_repeated_type(self, team, types):
-		for pokemon in team:
-			if (types[0] in pokemon[2]) and (types[1] in pokemon[2]): 
-				return True
+		if len(types) == 2:
+			for pokemon in team:
+				if (types[0] in pokemon[2]) and (types[1] in pokemon[2]): 
+					return True
 		return False
 
 	# Function to generate the html template with the poke team		
 	def generate_html(self, team):
 		file = open("template.html", "r");	
-		write_file = open("poketeam.html", "w+")
+		write_file = open(self.w_file, "w+")
 		template = file.read()
 
 		for i in range(0, 6):
@@ -113,8 +116,9 @@ class PokeTeam():
 		pokedex = self.parse_data(data)	
 		team = self.choose_random_team(pokedex)
 		self.generate_html(team)
+		webbrowser.open(os.path.realpath(self.w_file))
 
 # Main call
 if __name__ == "__main__":
-	poketeam = PokeTeam()
-	poketeam.run()
+	pt = PokeTeam()
+	pt.run()
